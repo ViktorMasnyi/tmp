@@ -1,10 +1,11 @@
 import type { FastifyRequest, FastifyReply } from 'fastify';
 import {balanceService} from '../services/balance.service.ts'
+import balanceSchema from '../schemas/balance.schema.ts'
 
 export async function balanceRoutes(fastify: any) {
     const pool = fastify.db.pool
     fastify.get('/balance/:address',
-        // {schema: allTodos},
+        {schema: balanceSchema},
         async function (request: FastifyRequest<{ Params: { address: string } }>, reply: FastifyReply) {
         try {
             const { address } = request.params;

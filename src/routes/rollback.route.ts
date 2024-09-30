@@ -1,10 +1,12 @@
 import type { FastifyRequest, FastifyReply } from 'fastify';
 import {rollbackService} from "../services/rollback.service.ts";
+import rollBackSchema from "../schemas/rollback.schema.ts";
 
 export async function rollbackRoutes(fastify: any) {
-    const pool = fastify.db.pool
+    const pool = fastify.db.pool;
+
     fastify.post('/rollback',
-        // {schema: allTodos},
+        {schema: rollBackSchema},
         async function (request: FastifyRequest<{ Querystring: { height: number } }>, reply: FastifyReply) {
             try {
                 const { height } = request.query;

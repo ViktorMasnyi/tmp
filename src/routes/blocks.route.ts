@@ -1,11 +1,12 @@
 import type { FastifyRequest, FastifyReply } from 'fastify';
 import { blocksService } from "../services/blocks.service.ts";
 import type { Block } from '../types/types.ts';
+import blocksSchema from "../schemas/blocks.schema.ts";
 
 export async function blocksRoutes(fastify: any) {
     const pool = fastify.db.pool
     fastify.post('/blocks',
-        // {schema: allTodos},
+        {schema: blocksSchema},
         async function (request: FastifyRequest, reply: FastifyReply) {
             try {
                 const block = request.body as Block;
