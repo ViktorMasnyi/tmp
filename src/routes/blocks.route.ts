@@ -11,10 +11,14 @@ export async function blocksRoutes(fastify: any) {
             try {
                 const block = request.body as Block;
 
-                await blocksService.addBlock(pool, block)
+                await blocksService.addBlock(pool, block);
 
                 return  reply.code(201).send({ message: 'Block added successfully' });
             } catch(err: any) {
+                if (err.message === 'Invalid block height') {
+                    return reply.code(400).send({ error: err.message });
+                }
+
                 throw new Error(err);
             }
         });
