@@ -1,6 +1,7 @@
 import Fastify from 'fastify';
 import { Pool } from 'pg';
 import { randomUUID } from 'crypto';
+import dbConnector from './db/db';
 
 type Output = {
     address: string;
@@ -28,14 +29,17 @@ process.env.DATABASE_URL = 'postgres://myuser:mypassword@localhost:5432/mydataba
 
 const fastify = Fastify({ logger: true });
 
+fastify.register(dbConnector)
+
 fastify.get('/', async (request, reply) => {
-    return { hello: 'world' };
+  return { hello: 'world' };
 });
 
 fastify.get('/balance/:address', async (request, reply) => {
-    const pool = new Pool({
-        connectionString: process.env.DATABASE_URL
-    });
+    const pool = fastify.db.pool;
+
+    console.log('====db client', fastify.db.pool);
+
     const { address } = request.params;
     const { rows } = await pool.query(`
         SELECT * FROM transactions WHERE address = $1;
@@ -50,9 +54,7 @@ fastify.get('/balance/:address', async (request, reply) => {
 });
 
 fastify.post('/rollback', async (request, reply) => {
-    const pool = new Pool({
-        connectionString: process.env.DATABASE_URL
-    });
+    const pool = fastify.db.pool;
     const { height } = request.query;
     console.log('====height', height);
 
@@ -69,9 +71,7 @@ fastify.post('/rollback', async (request, reply) => {
 });
 
 fastify.post('/blocks', async (request, reply) => {
-    const pool = new Pool({
-        connectionString: process.env.DATABASE_URL
-    });
+    const pool = fastify.db.pool;
     const { id: blockId, height, transactions } = request.body as Block;
 
     const handleTransaction = async (transaction: Transaction, pool: Pool) => {
@@ -109,17 +109,11 @@ fastify.post('/blocks', async (request, reply) => {
         await handleTransaction(transaction, pool);
     }
 
-    // const { id: transactionId, outputs, inputs } = transactions[0];
-
-
-
-
-
     // writhe the query to find the transaction where height is equal to the current height - 1
 
-    const { rows } = await pool.query(`
-        SELECT * FROM transactions WHERE height = $1;
-    `, [height - 1]);
+    // const { rows } = await pool.query(`
+    //     SELECT * FROM transactions WHERE height = $1;
+    // `, [height - 1]);
 
     // await pool.query(`
     //     INSERT INTO transactions (address, txid, height, value)
@@ -173,7 +167,9 @@ async function bootstrap() {
     });
 
     await createTables(pool);
-    // await testPostgres(pool);
+    await testPostgres(pool);
+
+    await pool.end();
 }
 
 try {
