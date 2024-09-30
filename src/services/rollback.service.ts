@@ -2,17 +2,31 @@ import { Pool } from "pg";
 
 export const rollbackService = {
     rollBack: async (dbPool: Pool, height: number, ) => {
-        await dbPool.query(`
-            UPDATE transactions
-            SET isconsumed = FALSE
-            WHERE height = $1;
-        `, [height]);
+        let rowCount = 0;
 
-        const { rowCount } = await dbPool.query(`
-            DELETE FROM transactions WHERE height > $1;
-        `, [height]);
+        try {
+            await dbPool.query(`start transaction;`);
+            await dbPool.query(`
+                UPDATE transactions
+                SET isconsumed = FALSE
+                WHERE height = $1;
+            `, [height]);
 
-        console.log('====rowCount', rowCount);
+            const data = await dbPool.query(`
+                DELETE
+                FROM transactions
+                WHERE height > $1;
+            `, [height]);
+
+            rowCount = data.rowCount ? data.rowCount : 0;
+
+            await dbPool.query(`commit;`);
+        } catch (e) {
+            await dbPool.query(`rollback;`);
+
+            throw e;
+
+        }
 
         return rowCount;
     }

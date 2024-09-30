@@ -1,6 +1,5 @@
 import { Pool } from "pg";
 
-
 export const balanceService = {
     getBalance: async (dbPool: Pool, address: string) => {
 
