@@ -15,7 +15,7 @@ export async function blocksRoutes(fastify: any) {
 
                 return  reply.code(201).send({ message: 'Block added successfully' });
             } catch(err: any) {
-                if (err.message === 'Invalid block height') {
+                if (err.name === 'UserError') {
                     return reply.code(400).send({ error: err.message });
                 }
 
