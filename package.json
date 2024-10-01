@@ -4,11 +4,22 @@
   "type": "module",
   "scripts": {
     "start": "bun src/index.ts",
-    "run-docker": "docker-compose up -d --build"
+    "run-docker": "docker-compose up -d --build",
+    "run-tests": "jest --config=jest.config.js"
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "@types/pg": "^8.11.8"
+    "@types/chai": "^5.0.0",
+    "@types/jest": "^29.5.13",
+    "@types/mocha": "^10.0.8",
+    "@types/pg": "^8.11.8",
+    "@types/sinon": "^17.0.3",
+    "chai": "^5.1.1",
+    "jest": "^29.7.0",
+    "mocha": "^10.7.3",
+    "sinon": "^19.0.2",
+    "ts-jest": "^29.2.5",
+    "ts-node": "^10.9.2"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"

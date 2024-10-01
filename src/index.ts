@@ -15,8 +15,8 @@ routes.map((route) => {
     fastify.register(route);
 })
 
-fastify.get('/', async () => {
-  return { hello: 'world' };
+fastify.get('/health', async () => {
+  return { status: 'OK' };
 });
 
 async function testPostgres(pool: Pool) {
