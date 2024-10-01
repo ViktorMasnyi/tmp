@@ -4,11 +4,12 @@ import { randomUUID } from 'crypto';
 import dbConnector from './db/db';
 import routes from "./routes";
 
+// todo: move to .env
 process.env.DATABASE_URL = 'postgres://myuser:mypassword@localhost:5432/mydatabase';
 
 const fastify = Fastify({ logger: true });
 
-fastify.register(dbConnector)
+fastify.register(dbConnector);
 
 routes.map((route) => {
     fastify.register(route);
@@ -40,12 +41,12 @@ async function testPostgres(pool: Pool) {
 async function createTables(pool: Pool) {
     await pool.query(`
         CREATE TABLE IF NOT EXISTS transactions (
-                                                    address VARCHAR(63) PRIMARY KEY,
-                                                    txId VARCHAR(32),
-                                                    height INT,
-                                                    value INT,
-                                                    index INT,
-                                                    isConsumed BOOLEAN DEFAULT FALSE
+            address VARCHAR(63) PRIMARY KEY,
+            txId VARCHAR(32),
+            height INT,
+            value INT,
+            index INT,
+            isConsumed BOOLEAN DEFAULT FALSE
         );
         CREATE INDEX IF NOT EXISTS idx_height ON transactions (height);
     `);

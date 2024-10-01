@@ -9,20 +9,15 @@ const handleTransaction = async (height: number, transaction: Transaction, pool:
     if  (inputs.length) {
         const input = inputs[0];
         const { txId, index } = input;
-        // find the transaction that has the txId and index
-        // todo: remove select query
-        const { rows } = await pool.query(`
-            SELECT * FROM transactions WHERE txId = $1 AND index = $2;
-        `, [txId, index]);
-        if (rows.length === 1) {
-            // todo: user rowCount enstead of statement above
-            await pool.query(`
+
+        const res = await pool.query(`
                 UPDATE transactions
                 SET isConsumed = TRUE
                 WHERE txId = $1 AND index = $2;
             `, [txId, index]);
-        } else {
-            throw new Error(`Valid input not found: txId: ${txId} index: ${index}`);
+
+        if (res.rowCount === 0) {
+            throw new UserError(`Valid input not found: txId: ${txId} index: ${index}`);
         }
     }
 
@@ -73,15 +68,15 @@ export const blocksService = {
         const outputSum = calculateSum(transactions);
         const inputSum = inputValue.rows?.[0]?.value;
 
-        console.log('====inputSum', typeof inputSum);
-
         if (typeof inputSum !== 'undefined' && inputSum !== outputSum) {
             throw new UserError('Sum of input values does not match sum of output values');
         }
 
         const expectedBlockId = await calculateBlockId(height, transactions);
+
         console.log('====blockId', blockId);
         console.log('====expectedBlockId', expectedBlockId);
+
         if (blockId !== expectedBlockId) {
             throw new UserError('Invalid block ID');
         }
