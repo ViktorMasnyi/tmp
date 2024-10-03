@@ -6,7 +6,7 @@ import { UserError } from "./errors.ts";
 const handleTransaction = async (height: number, transaction: Transaction, pool: Pool): Promise<void> => {
     const { id: transactionId, outputs, inputs } = transaction;
     // one transaction can have only one input
-    if  (inputs.length) {
+    if (inputs.length) {
         const input = inputs[0];
         const { txId, index } = input;
 
@@ -21,13 +21,12 @@ const handleTransaction = async (height: number, transaction: Transaction, pool:
         }
     }
 
-    for (const i in outputs) {
-        const { address, value } = outputs[i];
-        await pool.query(`
-            INSERT INTO transactions (address, txid, height, value, index)
-            VALUES ($1, $2, $3, $4, $5);
-        `, [address, transactionId, height, value, i]);
-    }
+    const values = outputs.map((output, i) => `('${output.address}', '${transactionId}', ${height}, ${output.value}, ${i})`).join(', ');
+
+    await pool.query(`
+        INSERT INTO transactions (address, txid, height, value, index)
+        VALUES ${values};
+    `);
 };
 
 const getCurrentHeight = async (pool: Pool): Promise<number> => {
@@ -74,23 +73,20 @@ export const blocksService = {
 
         const expectedBlockId = await calculateBlockId(height, transactions);
 
-        console.log('====blockId', blockId);
-        console.log('====expectedBlockId', expectedBlockId);
-
         if (blockId !== expectedBlockId) {
             throw new UserError('Invalid block ID');
         }
 
         try {
-            await dbPool.query(`start transaction;`);
+            await dbPool.query(`START TRANSACTION;`);
 
             for (const transaction of transactions) {
                 await handleTransaction(height, transaction, dbPool);
             }
 
-            await dbPool.query(`commit;`);
+            await dbPool.query(`COMMIT;`);
         } catch (e) {
-            await dbPool.query(`rollback;`);
+            await dbPool.query(`ROLLBACK;`);
 
             throw e;
         }
