@@ -43,3 +43,4 @@ It performs the following validations:
 - add monitoring to the app, with metrics and alerts (datadog, sentry, cloudwatch etc.)
 - add health check endpoint (for K8S, ECS, etc.)
 - add ORM to be able to maintain the database schema migrations
+- add graceful shutdown to the app
